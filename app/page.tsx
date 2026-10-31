@@ -152,18 +152,18 @@ export default function Home() {
       <section className="section shell" id="boundaries">
         <div className="boundary-card">
           <div><p className="eyebrow">03 / architectural honesty</p><h2>Good hosting has<br /><span>boundaries.</span></h2></div>
-          <div className="boundary-copy"><p>This is a homelab built for assignments, demos, and final projects—not banking infrastructure. Uptime is best-effort, and the service is designed around your grading window.</p><p>The setup fee assumes your code can build. Debugging application logic, rewriting broken repositories, or emergency fixes the night before a deadline are separate conversations.</p><a className="text-link" href="#contact">read the full scope <ArrowUpRight /></a></div>
+          <div className="boundary-copy"><p>This is a homelab built for assignments, demos, and final projects—not banking infrastructure. Uptime is best-effort, and the service is designed around your grading window.</p><p>The setup fee assumes your code can build. Debugging application logic, rewriting broken repositories, or emergency fixes the night before a deadline are separate conversations.</p></div>
         </div>
       </section>
 
       <section className="cta-section shell" id="contact">
         <div className="cta-grid">
           <div><p className="eyebrow">ready when you are</p><h2>Your project deserves<br /><span>a live URL.</span></h2></div>
-          <div className="cta-action"><p>Tell me what you&apos;re building, when it&apos;s due, and where the repo lives.</p><a className="button" href="mailto:hello@sendiko.local?subject=Project%20hosting%20request">start a conversation <ArrowUpRight /></a></div>
+          <div className="cta-action"><p>Tell me what you&apos;re building, when it&apos;s due, and where the repo lives.</p><a className="button" href="https://wa.me/6285171119432?text=Hi%20Sendiko%2C%20I%27d%20like%20to%20ask%20about%20hosting%20my%20project." target="_blank" rel="noopener noreferrer">chat on WhatsApp <ArrowUpRight /></a></div>
         </div>
       </section>
 
-      <footer className="footer shell"><a className="brand" href="#top" aria-label="Sendiko Service Hosting home"><span className="brand-mark">SSH</span><span className="brand-name">Sendiko Service Hosting</span></a><span>student hosting, from a small room in Jakarta.</span><span className="footer-code">SYS / 2025—∞</span></footer>
+      <footer className="footer shell"><a className="brand" href="#top" aria-label="Sendiko Service Hosting home"><span className="brand-mark">SSH</span><span className="brand-name">Sendiko Service Hosting</span></a><span>student hosting, from a small room in Bandung.</span><span className="footer-code">SYS / 2025—∞</span></footer>
     </main>
   );
 }
