@@ -1,5 +1,27 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Run with Docker
+
+Build and start the production container:
+
+```bash
+docker compose up --build -d
+```
+
+Open [http://localhost:3000](http://localhost:3000). Check the container status with:
+
+```bash
+docker compose ps
+```
+
+Stop the service with:
+
+```bash
+docker compose down
+```
+
+The container listens on port `3000` and runs as a non-root user. Put a reverse proxy such as Caddy or Nginx in front of it when exposing the service publicly.
+
 ## Getting Started
 
 First, run the development server:
