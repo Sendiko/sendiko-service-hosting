@@ -2,6 +2,12 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Run with Docker
 
+Copy the example environment file and adjust the host port if needed:
+
+```bash
+cp .env.example .env
+```
+
 Build and start the production container:
 
 ```bash
@@ -20,7 +26,7 @@ Stop the service with:
 docker compose down
 ```
 
-The container listens on port `3000` and runs as a non-root user. Put a reverse proxy such as Caddy or Nginx in front of it when exposing the service publicly.
+The container listens on port `3000` and maps to the host port configured by `APP_PORT` (default: `3000`). It runs as a non-root user. Put a reverse proxy such as Caddy or Nginx in front of it when exposing the service publicly.
 
 ## Getting Started
 
