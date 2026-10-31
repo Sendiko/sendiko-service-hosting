@@ -84,9 +84,9 @@ export default function Home() {
   return (
     <main>
       <nav className="nav shell" aria-label="Main navigation">
-        <a className="brand" href="#top" aria-label="Nodehouse home">
-          <span className="brand-mark"><span /></span>
-          <span>nodehouse<span className="brand-dot">.</span></span>
+        <a className="brand" href="#top" aria-label="Sendiko Service Hosting home">
+          <span className="brand-mark">SSH</span>
+          <span className="brand-name">Sendiko Service Hosting</span>
         </a>
         <div className="nav-links">
           <a href="#how-it-works">how it works</a>
@@ -159,11 +159,11 @@ export default function Home() {
       <section className="cta-section shell" id="contact">
         <div className="cta-grid">
           <div><p className="eyebrow">ready when you are</p><h2>Your project deserves<br /><span>a live URL.</span></h2></div>
-          <div className="cta-action"><p>Tell me what you&apos;re building, when it&apos;s due, and where the repo lives.</p><a className="button" href="mailto:hello@nodehouse.local?subject=Project%20hosting%20request">start a conversation <ArrowUpRight /></a></div>
+          <div className="cta-action"><p>Tell me what you&apos;re building, when it&apos;s due, and where the repo lives.</p><a className="button" href="mailto:hello@sendiko.local?subject=Project%20hosting%20request">start a conversation <ArrowUpRight /></a></div>
         </div>
       </section>
 
-      <footer className="footer shell"><a className="brand" href="#top"><span className="brand-mark"><span /></span><span>nodehouse<span className="brand-dot">.</span></span></a><span>student hosting, from a small room in Jakarta.</span><span className="footer-code">SYS / 2025—∞</span></footer>
+      <footer className="footer shell"><a className="brand" href="#top" aria-label="Sendiko Service Hosting home"><span className="brand-mark">SSH</span><span className="brand-name">Sendiko Service Hosting</span></a><span>student hosting, from a small room in Jakarta.</span><span className="footer-code">SYS / 2025—∞</span></footer>
     </main>
   );
 }

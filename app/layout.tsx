@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "nodehouse. — student project hosting",
+  title: "Sendiko Service Hosting — student project hosting",
   description: "Simple, local hosting for university assignments and final projects.",
 };
 
