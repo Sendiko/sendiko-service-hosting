@@ -34,6 +34,14 @@ function Check() {
   return <span className="check" aria-hidden="true">+</span>;
 }
 
+function getWhatsAppUrl(language: "id" | "en") {
+  const message = language === "id"
+    ? "Halo Kak Sendiko, saya ingin bertanya tentang hosting project saya."
+    : "Hi Sendiko, I'd like to ask about hosting my project.";
+
+  return `https://wa.me/6285171119432?text=${encodeURIComponent(message)}`;
+}
+
 function PricingTable({
   title,
   description,
@@ -77,7 +85,7 @@ function PricingTable({
             <tr className="discuss-row">
               <td>70+ / {language === "id" ? "custom" : "custom"}</td>
               <td colSpan={3}>
-                <a href="https://wa.me/6285171119432?text=Hi%20Sendiko%2C%20I%27d%20like%20to%20ask%20about%20hosting%20my%20project." target="_blank" rel="noopener noreferrer">
+                <a href={getWhatsAppUrl(language)} target="_blank" rel="noopener noreferrer">
                   {language === "id" ? "diskusikan" : "chat to discuss"} <ArrowUpRight />
                 </a>
               </td>
@@ -184,7 +192,7 @@ export default function Home() {
       <section className="cta-section shell" id="contact">
         <div className="cta-grid">
           <div><p className="eyebrow">{isId ? "siap kapan saja" : "ready when you are"}</p><h2>{isId ? "Project-mu layak punya" : "Your project deserves"}<br /><span>{isId ? "URL live." : "a live URL."}</span></h2></div>
-          <div className="cta-action"><p>{isId ? "Ceritakan apa yang sedang kamu buat, kapan deadline-nya, dan di mana repo-nya." : "Tell me what you're building, when it's due, and where the repo lives."}</p><a className="button" href="https://wa.me/6285171119432?text=Hi%20Sendiko%2C%20I%27d%20like%20to%20ask%20about%20hosting%20my%20project." target="_blank" rel="noopener noreferrer">{isId ? "chat via WhatsApp" : "chat on WhatsApp"} <ArrowUpRight /></a></div>
+          <div className="cta-action"><p>{isId ? "Ceritakan apa yang sedang kamu buat, kapan deadline-nya, dan di mana repo-nya." : "Tell me what you're building, when it's due, and where the repo lives."}</p><a className="button" href={getWhatsAppUrl(language)} target="_blank" rel="noopener noreferrer">{isId ? "chat via WhatsApp" : "chat on WhatsApp"} <ArrowUpRight /></a></div>
         </div>
       </section>
 
