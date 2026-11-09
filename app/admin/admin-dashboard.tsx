@@ -3,25 +3,32 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { adminSeed, clientSeed, packageSeed, type ClientRecord, type PackageRecord } from "../../lib/seed-data";
+import { adminSeed, clientSeed, packageSeed, type BillingRecord, type ClientRecord, type PackageRecord } from "../../lib/seed-data";
 
-type Section = "overview" | "packages" | "clients";
+type Section = "overview" | "packages" | "clients" | "billing";
 type PackageForm = Omit<PackageRecord, "id">;
 type ClientForm = Omit<ClientRecord, "id">;
+type BillingForm = Omit<BillingRecord, "id">;
+type BillingRow = BillingRecord & { client?: { name: string } };
 
 const emptyPackage: PackageForm = { name: "", category: "API", stack: "", resource: "", setupPrice: 0, monthlyPrice: 0, active: true };
 const emptyClient: ClientForm = { name: "", project: "", packageId: "", status: "Lead", contact: "" };
+const emptyBilling: BillingForm = { clientId: "", date: new Date().toISOString().slice(0, 10), amount: 0, paymentMethod: "Bank transfer" };
 
 function formatPrice(value: number) { return `Rp ${value}K`; }
+function formatAmount(value: number) { return `Rp ${new Intl.NumberFormat("id-ID").format(value)}`; }
 function makeId(prefix: string) { return `${prefix}-${Date.now()}`; }
 
 export default function AdminPage({ section }: { section: Section }) {
   const [packages, setPackages] = useState<PackageRecord[]>(packageSeed);
   const [clients, setClients] = useState<ClientRecord[]>(clientSeed);
+  const [billings, setBillings] = useState<BillingRow[]>([]);
   const [packageForm, setPackageForm] = useState<PackageForm>(emptyPackage);
   const [clientForm, setClientForm] = useState<ClientForm>(emptyClient);
+  const [billingForm, setBillingForm] = useState<BillingForm>(emptyBilling);
   const [editingPackageId, setEditingPackageId] = useState<string | null>(null);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
+  const [editingBillingId, setEditingBillingId] = useState<string | null>(null);
   const [packageSearch, setPackageSearch] = useState("");
   const [clientSearch, setClientSearch] = useState("");
   const [notice, setNotice] = useState("");
@@ -33,17 +40,20 @@ export default function AdminPage({ section }: { section: Section }) {
   }
 
   const loadData = useCallback(async () => {
-    const [packageResponse, clientResponse] = await Promise.all([
+    const [packageResponse, clientResponse, billingResponse] = await Promise.all([
       fetch("/api/admin/packages"),
       fetch("/api/admin/clients"),
+      fetch("/api/admin/billing"),
     ]);
-    if (packageResponse.status === 401 || clientResponse.status === 401) {
+    if ([packageResponse, clientResponse, billingResponse].some((response) => response.status === 401)) {
       router.push("/admin/login");
       return;
     }
-    if (!packageResponse.ok || !clientResponse.ok) throw new Error("Unable to load admin data.");
+    if (!packageResponse.ok || !clientResponse.ok || !billingResponse.ok) throw new Error("Unable to load admin data.");
     setPackages(await packageResponse.json() as PackageRecord[]);
     setClients(await clientResponse.json() as ClientRecord[]);
+    const billingData = await billingResponse.json() as BillingRow[];
+    setBillings(billingData.map((item) => ({ ...item, date: item.date.slice(0, 10) })));
   }, [router]);
 
   useEffect(() => {
@@ -63,6 +73,10 @@ export default function AdminPage({ section }: { section: Section }) {
   const visibleClients = useMemo(() => clients.filter((item) =>
     `${item.name} ${item.project} ${item.contact}`.toLowerCase().includes(clientSearch.toLowerCase()),
   ), [clients, clientSearch]);
+
+  const visibleBillings = useMemo(() => billings.filter((item) =>
+    `${item.client?.name ?? ""} ${item.paymentMethod} ${item.date}`.toLowerCase().includes(clientSearch.toLowerCase()),
+  ), [billings, clientSearch]);
 
   async function savePackage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -142,6 +156,46 @@ export default function AdminPage({ section }: { section: Section }) {
     showNotice("Client removed");
   }
 
+  async function saveBilling(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!billingForm.clientId || !billingForm.date || billingForm.amount < 0) return;
+    try {
+      const id = editingBillingId ?? makeId("billing");
+      const response = await fetch(editingBillingId ? `/api/admin/billing/${id}` : "/api/admin/billing", {
+        method: editingBillingId ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...billingForm, id }),
+      });
+      if (!response.ok) throw new Error("Unable to save billing record.");
+      const saved = await response.json() as BillingRecord;
+      const row = { ...saved, date: saved.date.slice(0, 10), client: { name: clients.find((item) => item.id === saved.clientId)?.name ?? "Unknown client" } };
+      setBillings((current) => editingBillingId ? current.map((item) => item.id === id ? row : item) : [row, ...current]);
+      showNotice(editingBillingId ? "Billing record updated" : "Billing record added");
+    } catch (error) {
+      console.error(error);
+      showNotice("Unable to save billing record");
+    }
+    setBillingForm(emptyBilling);
+    setEditingBillingId(null);
+  }
+
+  function editBilling(item: BillingRow) {
+    setEditingBillingId(item.id);
+    setBillingForm({ clientId: item.clientId, date: item.date, amount: item.amount, paymentMethod: item.paymentMethod });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function removeBilling(id: string) {
+    if (!window.confirm("Remove this billing record?")) return;
+    const response = await fetch(`/api/admin/billing/${id}`, { method: "DELETE" });
+    if (!response.ok) {
+      showNotice("Unable to remove billing record");
+      return;
+    }
+    setBillings((current) => current.filter((item) => item.id !== id));
+    showNotice("Billing record removed");
+  }
+
   return (
     <main className="admin-shell">
       <aside className="admin-sidebar">
@@ -154,9 +208,9 @@ export default function AdminPage({ section }: { section: Section }) {
           <span><strong>{adminSeed.name}</strong><small>{adminSeed.email}</small></span>
         </div>
         <nav className="admin-nav" aria-label="Admin navigation">
-          {(["overview", "packages", "clients"] as Section[]).map((item) => (
+          {(["overview", "packages", "clients", "billing"] as Section[]).map((item) => (
             <Link key={item} className={section === item ? "active" : ""} href={`/admin/${item}`}>
-              <span>{item === "overview" ? "▦" : item === "packages" ? "◈" : "◎"}</span>{item}
+              <span>{item === "overview" ? "▦" : item === "packages" ? "◈" : item === "clients" ? "◎" : "$"}</span>{item}
             </Link>
           ))}
         </nav>
@@ -224,6 +278,21 @@ export default function AdminPage({ section }: { section: Section }) {
           </div>
           <div className="admin-panel admin-table-panel"><div className="admin-panel-heading"><div><p className="eyebrow">client list / {clients.length}</p><h2>Project clients</h2></div><input className="admin-search" value={clientSearch} onChange={(event) => setClientSearch(event.target.value)} placeholder="search clients..." /></div>
             {visibleClients.length ? <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>client</th><th>project</th><th>package</th><th>contact</th><th>status</th><th /></tr></thead><tbody>{visibleClients.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.project}</td><td>{packages.find((packageItem) => packageItem.id === item.packageId)?.name ?? "Unassigned"}</td><td>{item.contact}</td><td><span className={`admin-status ${item.status.toLowerCase()}`}>{item.status}</span></td><td className="admin-row-actions"><button onClick={() => editClient(item)}>edit</button><button onClick={() => removeClient(item.id)}>remove</button></td></tr>)}</tbody></table></div> : <div className="admin-empty"><span>◎</span><h3>No client records yet.</h3><p>Add a client when a project is confirmed. Your seeded catalog is ready above.</p></div>}
+          </div>
+        </div>}
+
+        {section === "billing" && <div className="admin-management">
+          <div className="admin-panel admin-form-panel"><div className="admin-panel-heading"><div><p className="eyebrow">{editingBillingId ? "edit billing" : "new billing"}</p><h2>{editingBillingId ? "Update a payment." : "Record a payment."}</h2></div></div>
+            <form className="admin-form" onSubmit={saveBilling}>
+              <label>client<select value={billingForm.clientId} onChange={(event) => setBillingForm({ ...billingForm, clientId: event.target.value })}><option value="">Select a client</option>{clients.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+              <label>date<input type="date" value={billingForm.date} onChange={(event) => setBillingForm({ ...billingForm, date: event.target.value })} /></label>
+              <label>amount (Rp)<input type="number" min="0" step="1" value={billingForm.amount} onChange={(event) => setBillingForm({ ...billingForm, amount: Number(event.target.value) })} /></label>
+              <label>payment method<select value={billingForm.paymentMethod} onChange={(event) => setBillingForm({ ...billingForm, paymentMethod: event.target.value as BillingForm["paymentMethod"] })}><option>Bank transfer</option><option>Cash</option><option>E-wallet</option><option>Credit card</option></select></label>
+              <div className="admin-form-actions"><button className="admin-primary-button" type="submit">{editingBillingId ? "save changes" : "add payment"} <span>↗</span></button>{editingBillingId && <button className="admin-secondary-button" type="button" onClick={() => { setEditingBillingId(null); setBillingForm(emptyBilling); }}>cancel</button>}</div>
+            </form>
+          </div>
+          <div className="admin-panel admin-table-panel"><div className="admin-panel-heading"><div><p className="eyebrow">billing records / {billings.length}</p><h2>Payment history</h2></div><input className="admin-search" value={clientSearch} onChange={(event) => setClientSearch(event.target.value)} placeholder="search billing..." /></div>
+            {visibleBillings.length ? <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>client</th><th>date</th><th>amount</th><th>payment method</th><th /></tr></thead><tbody>{visibleBillings.map((item) => <tr key={item.id}><td><strong>{item.client?.name ?? "Unknown client"}</strong></td><td>{item.date}</td><td className="admin-price">{formatAmount(item.amount)}</td><td>{item.paymentMethod}</td><td className="admin-row-actions"><button onClick={() => editBilling(item)}>edit</button><button onClick={() => removeBilling(item.id)}>remove</button></td></tr>)}</tbody></table></div> : <div className="admin-empty"><span>$</span><h3>No billing records yet.</h3><p>Record a payment after adding a client.</p></div>}
           </div>
         </div>}
       </section>

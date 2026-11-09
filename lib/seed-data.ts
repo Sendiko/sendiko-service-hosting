@@ -18,6 +18,14 @@ export type ClientRecord = {
   contact: string;
 };
 
+export type BillingRecord = {
+  id: string;
+  clientId: string;
+  date: string;
+  amount: number;
+  paymentMethod: "Bank transfer" | "Cash" | "E-wallet" | "Credit card";
+};
+
 export const adminSeed = {
   id: "admin-sendiko",
   name: "Sendiko Admin",

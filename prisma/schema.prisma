@@ -39,6 +39,21 @@ model Client {
   status    String   @default("Lead")
   packageId String?
   package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  billings  Billing[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Billing {
+  id            String   @id
+  clientId      String
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  date          DateTime
+  amount        Int
+  paymentMethod String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([date])
 }
