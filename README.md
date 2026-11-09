@@ -28,6 +28,12 @@ docker compose down
 
 The container listens on port `3000` and maps to the host port configured by `APP_PORT` (default: `3000`). It runs as a non-root user. Put a reverse proxy such as Caddy or Nginx in front of it when exposing the service publicly.
 
+## Admin workspace
+
+Open [http://localhost:3000/admin](http://localhost:3000/admin) to manage the seeded package catalog and client records. The package seed mirrors the pricing in [`PRICE.md`](./PRICE.md); client records start empty so no customer data is fabricated. Data is stored in PostgreSQL through Prisma.
+
+For local development, copy `.env.example` to `.env`, start PostgreSQL with `docker compose up -d db`, then run `bun run db:migrate` and `bun run db:seed`. To create a new development migration after changing the schema, use `bun run db:migrate:dev -- --name describe-your-change`. Authentication should be added before exposing the admin route publicly.
+
 ## Getting Started
 
 First, run the development server:
