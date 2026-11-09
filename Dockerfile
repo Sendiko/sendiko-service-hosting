@@ -7,6 +7,7 @@ RUN bun install --frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
+ENV DATABASE_URL=postgresql://sendiko:sendiko-local-password@db:5432/sendiko?schema=public
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN bun run build
