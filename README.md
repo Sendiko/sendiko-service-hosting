@@ -30,9 +30,9 @@ The container listens on port `3000` and maps to the host port configured by `AP
 
 ## Admin workspace
 
-Open [http://localhost:3000/admin](http://localhost:3000/admin) to manage the seeded package catalog and client records. The package seed mirrors the pricing in [`PRICE.md`](./PRICE.md); client records start empty so no customer data is fabricated. Data is stored in PostgreSQL through Prisma.
+Open [http://localhost:3000/admin](http://localhost:3000/admin) to access the protected admin workspace. Its sections are available at `/admin/overview`, `/admin/packages`, and `/admin/clients`. Sign in with the `ADMIN_USERNAME` and `ADMIN_PASSWORD` values from `.env`. The package seed mirrors the pricing in [`PRICE.md`](./PRICE.md); client records start empty so no customer data is fabricated. Data is stored in PostgreSQL through Prisma.
 
-For local development, copy `.env.example` to `.env`, start PostgreSQL with `docker compose up -d db`, then run `bun run db:migrate` and `bun run db:seed`. The full Docker Compose web container automatically applies migrations and seeds the catalog on startup. To create a new development migration after changing the schema, use `bun run db:migrate:dev -- --name describe-your-change`. Authentication should be added before exposing the admin route publicly.
+For local development, copy `.env.example` to `.env`, replace the admin password and session secret, start PostgreSQL with `docker compose up -d db`, then run `bun run db:migrate` and `bun run db:seed`. The full Docker Compose web container automatically applies migrations and seeds the catalog on startup. To create a new development migration after changing the schema, use `bun run db:migrate:dev -- --name describe-your-change`.
 
 ## Getting Started
 
