@@ -33,12 +33,6 @@ The container listens on port `3000` and maps to the host port configured by `AP
 First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
 bun dev
 ```
 

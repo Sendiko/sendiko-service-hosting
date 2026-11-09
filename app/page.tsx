@@ -3,27 +3,27 @@
 import { useState } from "react";
 
 const apiPlans = [
-  { range: "0–20 endpoints", setup: "50K", monthly: "50K", total: "125K" },
-  { range: "20–50 endpoints", setup: "50K", monthly: "100K", total: "175K" },
-  { range: "50–70 endpoints", setup: "50K", monthly: "150K", total: "225K" },
+  { range: "512MB RAM / 1GB storage", setup: "50K", monthly: "50K", total: "125K" },
+  { range: "1GB RAM / 2GB storage", setup: "50K", monthly: "100K", total: "175K" },
+  { range: "2GB RAM / 4GB storage", setup: "50K", monthly: "150K", total: "225K" },
 ];
 
 const laravelPlans = [
-  { range: "0–20 endpoints", setup: "65K", monthly: "50K", total: "135K" },
-  { range: "20–50 endpoints", setup: "65K", monthly: "100K", total: "185K" },
-  { range: "50–70 endpoints", setup: "65K", monthly: "150K", total: "235K" },
+  { range: "512MB RAM / 1GB storage", setup: "65K", monthly: "50K", total: "135K" },
+  { range: "1GB RAM / 2GB storage", setup: "65K", monthly: "100K", total: "185K" },
+  { range: "2GB RAM / 4GB storage", setup: "65K", monthly: "150K", total: "235K" },
 ];
 
 const javascriptWebsitePlans = [
-  { range: "0–20 pages", setup: "50K", monthly: "50K", total: "125K" },
-  { range: "20–50 pages", setup: "50K", monthly: "100K", total: "175K" },
-  { range: "50–70 pages", setup: "50K", monthly: "150K", total: "225K" },
+  { range: "512MB RAM / 1GB storage", setup: "50K", monthly: "50K", total: "125K" },
+  { range: "1GB RAM / 2GB storage", setup: "50K", monthly: "100K", total: "175K" },
+  { range: "2GB RAM / 4GB storage", setup: "50K", monthly: "150K", total: "225K" },
 ];
 
 const laravelWebsitePlans = [
-  { range: "0–20 pages", setup: "65K", monthly: "50K", total: "135K" },
-  { range: "20–50 pages", setup: "65K", monthly: "100K", total: "185K" },
-  { range: "50–70 pages", setup: "65K", monthly: "150K", total: "235K" },
+  { range: "512MB RAM / 1GB storage", setup: "65K", monthly: "50K", total: "135K" },
+  { range: "1GB RAM / 2GB storage", setup: "65K", monthly: "100K", total: "185K" },
+  { range: "2GB RAM / 4GB storage", setup: "65K", monthly: "150K", total: "235K" },
 ];
 
 function ArrowUpRight() {
@@ -67,7 +67,7 @@ function PricingTable({
         <table className="price-table">
           <thead>
             <tr>
-              <th>{language === "id" ? "scope" : "scope"}</th>
+              <th>{language === "id" ? "resource" : "resource"}</th>
               <th>{language === "id" ? "setup" : "setup"}</th>
               <th>{language === "id" ? "bulanan" : "monthly"}</th>
               <th>total*</th>
@@ -83,7 +83,7 @@ function PricingTable({
               </tr>
             ))}
             <tr className="discuss-row">
-              <td>70+ / {language === "id" ? "custom" : "custom"}</td>
+              <td>2GB+ / {language === "id" ? "custom" : "custom"}</td>
               <td colSpan={3}>
                 <a href={getWhatsAppUrl(language)} target="_blank" rel="noopener noreferrer">
                   {language === "id" ? "diskusikan" : "chat to discuss"} <ArrowUpRight />
@@ -169,8 +169,8 @@ export default function Home() {
       <section className="section pricing-section" id="pricing">
         <div className="shell">
           <div className="section-heading pricing-heading">
-            <div><p className="eyebrow">02 / {isId ? "harga transparan" : "transparent pricing"}</p><h2>{isId ? "Bayar berdasarkan" : "Pay for the"}<br /><span>{isId ? "scope, bukan gimik." : "scope, not the hype."}</span></h2></div>
-            <p>{isId ? "Semua harga dalam ribuan Rupiah. Tanpa tier misterius dan jargon enterprise. Pilih baris yang sesuai dengan project-mu, lalu kita konfirmasi detailnya." : "All prices in thousands of Indonesian Rupiah. No mystery tiers, no enterprise theatre. Pick the row that matches your project and we'll confirm the details."}</p>
+            <div><p className="eyebrow">02 / {isId ? "harga transparan" : "transparent pricing"}</p><h2>{isId ? "Bayar berdasarkan" : "Pay for the"}<br /><span>{isId ? "resource, bukan gimik." : "resources, not the hype."}</span></h2></div>
+            <p>{isId ? "Semua harga dalam ribuan Rupiah. Tanpa tier misterius dan jargon enterprise. Pilih kapasitas RAM dan storage yang sesuai dengan project-mu, lalu kita konfirmasi detailnya." : "All prices in thousands of Indonesian Rupiah. No mystery tiers, no enterprise theatre. Pick the RAM and storage capacity that fits your project and we'll confirm the details."}</p>
           </div>
           <div className="pricing-grid">
             <PricingTable title="JavaScript API" description={isId ? "Express, NestJS, Fastify, dan lainnya." : "Express, NestJS, Fastify, and friends."} plans={apiPlans} language={language} />
