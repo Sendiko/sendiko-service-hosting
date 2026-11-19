@@ -1,29 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const apiPlans = [
-  { range: "512MB RAM / 1GB storage", setup: "50K", monthly: "50K", total: "125K" },
-  { range: "1GB RAM / 2GB storage", setup: "50K", monthly: "100K", total: "175K" },
-  { range: "2GB RAM / 4GB storage", setup: "50K", monthly: "150K", total: "225K" },
+  { id: "javascript-api-1", range: "512MB RAM / 1GB storage", setup: "50K", monthly: "50K", total: "125K" },
+  { id: "javascript-api-2", range: "1GB RAM / 2GB storage", setup: "50K", monthly: "100K", total: "175K" },
+  { id: "javascript-api-3", range: "2GB RAM / 4GB storage", setup: "50K", monthly: "150K", total: "225K" },
 ];
 
 const laravelPlans = [
-  { range: "512MB RAM / 1GB storage", setup: "65K", monthly: "50K", total: "135K" },
-  { range: "1GB RAM / 2GB storage", setup: "65K", monthly: "100K", total: "185K" },
-  { range: "2GB RAM / 4GB storage", setup: "65K", monthly: "150K", total: "235K" },
+  { id: "laravel-api-1", range: "512MB RAM / 1GB storage", setup: "65K", monthly: "50K", total: "135K" },
+  { id: "laravel-api-2", range: "1GB RAM / 2GB storage", setup: "65K", monthly: "100K", total: "185K" },
+  { id: "laravel-api-3", range: "2GB RAM / 4GB storage", setup: "65K", monthly: "150K", total: "235K" },
 ];
 
 const javascriptWebsitePlans = [
-  { range: "512MB RAM / 1GB storage", setup: "50K", monthly: "50K", total: "125K" },
-  { range: "1GB RAM / 2GB storage", setup: "50K", monthly: "100K", total: "175K" },
-  { range: "2GB RAM / 4GB storage", setup: "50K", monthly: "150K", total: "225K" },
+  { id: "javascript-website-1", range: "512MB RAM / 1GB storage", setup: "50K", monthly: "50K", total: "125K" },
+  { id: "javascript-website-2", range: "1GB RAM / 2GB storage", setup: "50K", monthly: "100K", total: "175K" },
+  { id: "javascript-website-3", range: "2GB RAM / 4GB storage", setup: "50K", monthly: "150K", total: "225K" },
 ];
 
 const laravelWebsitePlans = [
-  { range: "512MB RAM / 1GB storage", setup: "65K", monthly: "50K", total: "135K" },
-  { range: "1GB RAM / 2GB storage", setup: "65K", monthly: "100K", total: "185K" },
-  { range: "2GB RAM / 4GB storage", setup: "65K", monthly: "150K", total: "235K" },
+  { id: "laravel-website-1", range: "512MB RAM / 1GB storage", setup: "65K", monthly: "50K", total: "135K" },
+  { id: "laravel-website-2", range: "1GB RAM / 2GB storage", setup: "65K", monthly: "100K", total: "185K" },
+  { id: "laravel-website-3", range: "2GB RAM / 4GB storage", setup: "65K", monthly: "150K", total: "235K" },
 ];
 
 function ArrowUpRight() {
@@ -79,7 +80,11 @@ function PricingTable({
                 <td>{plan.range}</td>
                 <td>Rp {plan.setup}</td>
                 <td>Rp {plan.monthly}</td>
-                <td className="total-price">Rp {plan.total}</td>
+                <td className="total-price">
+                  <Link href={`/order?package=${plan.id}`} title={language === "id" ? "Pesan paket ini" : "Order this package"} style={{ color: "var(--green)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    Rp {plan.total} <ArrowUpRight />
+                  </Link>
+                </td>
               </tr>
             ))}
             <tr className="discuss-row">
@@ -113,13 +118,18 @@ export default function Home() {
           <a href="#how-it-works">{isId ? "cara kerja" : "how it works"}</a>
           <a href="#pricing">{isId ? "harga" : "pricing"}</a>
           <a href="#boundaries">{isId ? "catatan penting" : "the fine print"}</a>
+          <Link href="/order">{isId ? "pesan hosting" : "order hosting"}</Link>
+          <Link href="/account">{isId ? "akun" : "account"}</Link>
         </div>
         <div className="nav-actions">
+          <Link className="text-link" href="/account" style={{ border: "none", paddingBottom: 0 }}>
+            {isId ? "akun" : "account"}
+          </Link>
           <div className="language-switcher" aria-label="Pilih bahasa / Choose language">
             <button className={isId ? "active" : ""} onClick={() => setLanguage("id")}>ID</button>
             <button className={!isId ? "active" : ""} onClick={() => setLanguage("en")}>EN</button>
           </div>
-          <a className="button button-small" href="#contact">{isId ? "deploy project saya" : "deploy my project"} <ArrowUpRight /></a>
+          <Link className="button button-small" href="/order">{isId ? "deploy project saya" : "deploy my project"} <ArrowUpRight /></Link>
         </div>
       </nav>
 
@@ -129,8 +139,8 @@ export default function Home() {
           <h1>{isId ? <>Deploy <br /><span>tugas kuliah.</span><br />Tanpa pusing server.</> : <>Ship your<br /><span>assignment.</span><br />Skip the server.</>}</h1>
           <p className="hero-lede">{isId ? "Layanan hosting lokal untuk project mahasiswa. Kamu bawa kodenya. Saya urus Docker, domain, database, dan kepanikan deployment sebelum presentasi." : "A small, local hosting service for student projects. You bring the code. I handle Docker, domains, databases, and the before presentation deployment panic."}</p>
           <div className="hero-actions">
-            <a className="button" href="#pricing">{isId ? "lihat harga" : "see the pricing"} <ArrowUpRight /></a>
-            <a className="text-link" href="#how-it-works">{isId ? "cara kerjanya" : "how it works"} <span>↓</span></a>
+            <Link className="button" href="/order">{isId ? "pesan sekarang" : "order now"} <ArrowUpRight /></Link>
+            <a className="button" style={{ background: "transparent", borderColor: "var(--line)" }} href="#pricing">{isId ? "lihat harga" : "see pricing"} ↓</a>
           </div>
           <div className="hero-proof">
             <div><strong>01</strong><span>{isId ? <>satu kekhawatiran<br />deadline lebih sedikit</> : <>one less<br />deadline worry</>}</span></div>
@@ -192,7 +202,13 @@ export default function Home() {
       <section className="cta-section shell" id="contact">
         <div className="cta-grid">
           <div><p className="eyebrow">{isId ? "siap kapan saja" : "ready when you are"}</p><h2>{isId ? "Project-mu layak punya" : "Your project deserves"}<br /><span>{isId ? "URL live." : "a live URL."}</span></h2></div>
-          <div className="cta-action"><p>{isId ? "Ceritakan apa yang sedang kamu buat, kapan deadline-nya, dan di mana repo-nya." : "Tell me what you're building, when it's due, and where the repo lives."}</p><a className="button" href={getWhatsAppUrl(language)} target="_blank" rel="noopener noreferrer">{isId ? "chat via WhatsApp" : "chat on WhatsApp"} <ArrowUpRight /></a></div>
+          <div className="cta-action">
+            <p>{isId ? "Ceritakan apa yang sedang kamu buat, kapan deadline-nya, dan di mana repo-nya." : "Tell me what you're building, when it's due, and where the repo lives."}</p>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <Link className="button" href="/order">{isId ? "pesan online" : "order online"} <ArrowUpRight /></Link>
+              <a className="button" style={{ background: "transparent", borderColor: "var(--line)" }} href={getWhatsAppUrl(language)} target="_blank" rel="noopener noreferrer">{isId ? "chat via WhatsApp" : "chat on WhatsApp"} <ArrowUpRight /></a>
+            </div>
+          </div>
         </div>
       </section>
 

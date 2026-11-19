@@ -1,5 +1,5 @@
 import { PrismaClient } from "../lib/generated/prisma/client";
-import { adminSeed, clientSeed, packageSeed } from "../lib/seed-data";
+import { adminSeed, clientSeed, customerSeed, packageSeed } from "../lib/seed-data";
 
 const prisma = new PrismaClient();
 
@@ -10,6 +10,19 @@ async function main() {
     create: adminSeed,
   });
 
+  for (const item of customerSeed) {
+    await prisma.customer.upsert({
+      where: { id: item.id },
+      update: { name: item.name, email: item.email, password: item.password },
+      create: {
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        password: item.password,
+      },
+    });
+  }
+
   for (const item of packageSeed) {
     await prisma.package.upsert({ where: { id: item.id }, update: item, create: item });
   }
@@ -18,7 +31,7 @@ async function main() {
     await prisma.client.upsert({ where: { id: item.id }, update: item, create: item });
   }
 
-  console.log(`Seeded ${packageSeed.length} packages and ${clientSeed.length} clients.`);
+  console.log(`Seeded ${customerSeed.length} customers, ${packageSeed.length} packages, and ${clientSeed.length} clients.`);
 }
 
 main()

@@ -18,30 +18,71 @@ model Admin {
 }
 
 model Package {
-  id           String   @id
+  id           String    @id
   name         String
   category     String
   stack        String
   resource     String
   setupPrice   Int
   monthlyPrice Int
-  active       Boolean  @default(true)
+  active       Boolean   @default(true)
   clients      Client[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  orders       Order[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model Client {
-  id        String   @id
+  id         String    @id
+  name       String
+  project    String
+  contact    String
+  status     String    @default("Lead")
+  packageId  String?
+  package    Package?  @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  billings   Billing[]
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  orders     Order[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([customerId])
+}
+
+model Customer {
+  id        String    @id
   name      String
-  project   String
-  contact   String
-  status    String   @default("Lead")
-  packageId String?
-  package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
-  billings  Billing[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  email     String    @unique
+  password  String
+  clients   Client[]
+  orders    Order[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Order {
+  id             String    @id
+  name           String
+  email          String
+  project        String
+  packageId      String
+  package        Package   @relation(fields: [packageId], references: [id])
+  durationMonths Int       @default(1)
+  totalAmount    Int
+  paymentMethod  String    @default("Bank Transfer - Bank Jago")
+  status         String    @default("Pending")
+  notes          String?
+  customerId     String?
+  customer       Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  clientId       String?
+  client         Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([customerId])
+  @@index([packageId])
+  @@index([clientId])
 }
 
 model Billing {

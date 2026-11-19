@@ -173,3 +173,69 @@ h1 span, h2 span { color: var(--indigo); }
 .login-form .admin-primary-button:disabled { cursor: wait; opacity: .7; }
 .login-error { background: #291719; border: 1px solid #6d2d32; color: #f78383; font: 10px var(--font-geist-mono), monospace; margin: 0; padding: 11px 12px; }
 @media (max-width: 480px) { .login-card { padding: 25px 20px; }.login-brand { margin-bottom: 55px; } }
+
+/* Customer Account Portal Styles */
+.account-wrapper { min-height: 100vh; background: #090a0f; display: flex; flex-direction: column; }
+.account-topbar { border-bottom: 1px solid var(--line); background: #0c0e14; }
+.account-topbar-inner { max-width: 1100px; margin: 0 auto; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; }
+.account-user-action { display: flex; align-items: center; gap: 16px; }
+.account-avatar { align-items: center; background: #1f2a37; border: 1px solid #374151; color: var(--indigo); display: inline-flex; font: 600 12px var(--font-geist-mono), monospace; height: 32px; justify-content: center; width: 32px; border-radius: 2px; }
+.account-content { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; width: 100%; display: grid; gap: 32px; }
+.account-hero { border-bottom: 1px solid var(--line); padding-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px; }
+.account-hero h1 { font-size: clamp(32px, 5vw, 44px); letter-spacing: -.06em; margin: 12px 0 6px; }
+.account-hero-meta { display: flex; gap: 18px; font: 11px var(--font-geist-mono), monospace; color: var(--muted); align-items: center; flex-wrap: wrap; }
+.account-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.account-card { background: var(--surface); border: 1px solid var(--line); padding: 28px; }
+.account-card-header { border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 22px; }
+.account-card-header h2 { font-size: 20px; letter-spacing: -.04em; margin: 8px 0 4px; }
+.account-card-header p { color: var(--muted); font-size: 12px; margin: 0; line-height: 1.5; }
+.account-success { background: #10251f; border: 1px solid #1d5b48; color: #57d2a6; font: 11px var(--font-geist-mono), monospace; padding: 12px 14px; margin-bottom: 18px; }
+.account-error { background: #291719; border: 1px solid #6d2d32; color: #f78383; font: 11px var(--font-geist-mono), monospace; padding: 12px 14px; margin-bottom: 18px; }
+.account-full-card { background: var(--surface); border: 1px solid var(--line); padding: 28px; }
+.project-card-list { display: grid; gap: 16px; margin-top: 18px; }
+.project-card { border: 1px solid var(--line); background: #0c0e14; padding: 18px; display: grid; gap: 10px; }
+.project-header { display: flex; justify-content: space-between; align-items: center; }
+.project-header strong { font-size: 15px; }
+.project-details { display: flex; gap: 20px; font: 11px var(--font-geist-mono), monospace; color: var(--muted); flex-wrap: wrap; }
+.account-empty-state { border: 1px dashed var(--line); padding: 36px 20px; text-align: center; }
+.account-empty-state h3 { font-size: 16px; margin: 10px 0 6px; }
+.account-empty-state p { font-size: 12px; color: var(--muted); max-width: 440px; margin: 0 auto 18px; }
+
+/* Order Form Styles */
+.order-shell { max-width: 1160px; margin: 0 auto; padding: 48px 24px 90px; width: 100%; }
+.order-layout { display: grid; grid-template-columns: 1.25fr 0.85fr; gap: 32px; margin-top: 32px; align-items: start; }
+.order-form-section { display: grid; gap: 28px; }
+.order-panel { background: var(--surface); border: 1px solid var(--line); padding: 26px; }
+.order-panel-title { font-size: 18px; letter-spacing: -.03em; margin: 8px 0 4px; }
+.order-panel-desc { color: var(--muted); font-size: 12px; margin: 0 0 20px; }
+.order-badge-registered { background: #122820; border: 1px solid #205e46; color: #52d6a5; font: 11px var(--font-geist-mono), monospace; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.duration-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+.duration-btn { background: #0b0c12; border: 1px solid var(--line); color: var(--muted); cursor: pointer; font: 11px var(--font-geist-mono), monospace; padding: 14px 8px; text-align: center; transition: all .2s; }
+.duration-btn:hover { border-color: #4b5563; color: var(--foreground); }
+.duration-btn.active { background: var(--indigo); border-color: var(--indigo); color: #fff; font-weight: 600; }
+.duration-btn small { display: block; font-size: 9px; opacity: .8; margin-top: 4px; }
+.payment-box { background: #0b0c12; border: 1px solid var(--line); padding: 18px; margin-top: 14px; }
+.payment-box-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 14px; }
+.payment-tag { background: #232238; border: 1px solid #4f46e5; color: #a5b4fc; font: 10px var(--font-geist-mono), monospace; padding: 3px 8px; }
+.payment-details-row { display: flex; justify-content: space-between; font: 11px var(--font-geist-mono), monospace; margin-bottom: 8px; }
+.payment-details-row span { color: var(--muted); }
+.payment-details-row strong { color: var(--foreground); }
+.order-summary-sidebar { background: var(--surface); border: 1px solid var(--line); padding: 26px; position: sticky; top: 24px; }
+.order-summary-rows { display: grid; gap: 12px; border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); padding: 18px 0; margin: 18px 0; font: 11px var(--font-geist-mono), monospace; }
+.order-summary-row { display: flex; justify-content: space-between; color: var(--muted); }
+.order-summary-row.total { color: var(--foreground); font-size: 14px; font-weight: 600; padding-top: 8px; border-top: 1px dashed var(--line); }
+.order-summary-row.total .price-val { color: var(--green); font-size: 16px; }
+.order-success-card { background: var(--surface); border: 1px solid var(--line); padding: 40px; text-align: center; max-width: 600px; margin: 40px auto; }
+.order-success-card h1 { font-size: 32px; margin: 16px 0 8px; }
+.order-ref-pill { background: #171b26; border: 1px solid var(--line); color: var(--indigo); display: inline-block; font: 600 13px var(--font-geist-mono), monospace; padding: 6px 16px; margin: 12px 0 24px; }
+
+@media (max-width: 860px) {
+  .order-layout { grid-template-columns: 1fr; }
+  .duration-grid { grid-template-columns: repeat(2, 1fr); }
+  .order-summary-sidebar { position: static; }
+}
+
+@media (max-width: 768px) {
+  .account-grid { grid-template-columns: 1fr; }
+  .account-hero { flex-direction: column; align-items: flex-start; }
+}
