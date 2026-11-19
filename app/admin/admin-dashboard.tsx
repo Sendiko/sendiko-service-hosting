@@ -205,7 +205,7 @@ export default function AdminPage({ section }: { section: Section }) {
     showNotice("Billing record removed");
   }
 
-  async function updateOrderStatus(id: string, status: string) {
+  async function updateOrderStatus(id: string, status: OrderRecord["status"]) {
     try {
       const response = await fetch(`/api/admin/orders/${id}`, {
         method: "PATCH",
@@ -244,11 +244,13 @@ export default function AdminPage({ section }: { section: Section }) {
           <span><strong>{adminSeed.name}</strong><small>{adminSeed.email}</small></span>
         </div>
         <nav className="admin-nav" aria-label="Admin navigation">
-          {([\"overview\", \"packages\", \"clients\", \"billing\", \"orders\"] as Section[]).map((item) => (
-            <Link key={item} className={section === item ? "active" : ""} href={`/admin/${item}`}>
-              <span>{item === "overview" ? "▦" : item === "packages" ? "◈" : item === "clients" ? "◎" : item === "billing" ? "$" : "📦"}</span>{item}
-            </Link>
-          ))}
+          <nav className="admin-nav" aria-label="Admin navigation">
+            {(["overview", "packages", "clients", "billing", "orders"] as Section[]).map((item) => (
+              <Link key={item} className={section === item ? "active" : ""} href={`/admin/${item}`}>
+                <span>{item === "overview" ? "▦" : item === "packages" ? "◈" : item === "clients" ? "◎" : item === "billing" ? "$" : "📦"}</span>{item}
+              </Link>
+            ))}
+          </nav>
         </nav>
         <div className="admin-sidebar-footer">
           <span className="live-dot" /> local workspace
