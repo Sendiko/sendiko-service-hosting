@@ -2,18 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { requireAdmin } from "../../../../lib/auth";
 
-const paymentMethods = ["Bank transfer", "Cash", "E-wallet", "Credit card"] as const;
-
 function billingData(body: Record<string, unknown>) {
   const date = typeof body.date === "string" ? new Date(`${body.date}T00:00:00.000Z`) : new Date(NaN);
   const amount = Number(body.amount);
   const paymentMethod = body.paymentMethod;
   if (!body.id || typeof body.id !== "string" || !body.clientId || typeof body.clientId !== "string" ||
       Number.isNaN(date.getTime()) || !Number.isInteger(amount) || amount < 0 ||
-      typeof paymentMethod !== "string" || !paymentMethods.includes(paymentMethod as typeof paymentMethods[number])) {
+      typeof paymentMethod !== "string" || !paymentMethod.trim()) {
     return null;
   }
-  return { id: body.id, clientId: body.clientId, date, amount, paymentMethod };
+  return { id: body.id, clientId: body.clientId, date, amount, paymentMethod: paymentMethod.trim() };
 }
 
 export async function GET() {

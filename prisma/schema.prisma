@@ -98,3 +98,14 @@ model Billing {
   @@index([clientId])
   @@index([date])
 }
+
+model PaymentMethod {
+  id          String   @id
+  name        String   @unique
+  description String
+  icon        String?
+  accountInfo String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

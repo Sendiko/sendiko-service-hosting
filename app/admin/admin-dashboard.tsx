@@ -3,18 +3,28 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { adminSeed, clientSeed, packageSeed, type BillingRecord, type ClientRecord, type PackageRecord, type OrderRecord } from "../../lib/seed-data";
+import { adminSeed, clientSeed, packageSeed, paymentMethodSeed, type BillingRecord, type ClientRecord, type PackageRecord, type OrderRecord, type PaymentMethodRecord } from "../../lib/seed-data";
 
-type Section = "overview" | "packages" | "clients" | "billing" | "orders";
+type Section = "overview" | "packages" | "clients" | "billing" | "orders" | "payment-methods";
 type OrderRow = OrderRecord & { package?: { name: string; resource: string } };
 type PackageForm = Omit<PackageRecord, "id">;
 type ClientForm = Omit<ClientRecord, "id">;
 type BillingForm = Omit<BillingRecord, "id">;
 type BillingRow = BillingRecord & { client?: { name: string } };
+type PaymentMethodForm = Omit<PaymentMethodRecord, "id">;
 
 const emptyPackage: PackageForm = { name: "", category: "API", stack: "", resource: "", setupPrice: 0, monthlyPrice: 0, active: true };
 const emptyClient: ClientForm = { name: "", project: "", packageId: "", status: "Lead", contact: "" };
 const emptyBilling: BillingForm = { clientId: "", date: new Date().toISOString().slice(0, 10), amount: 0, paymentMethod: "Bank transfer" };
+const emptyPaymentMethod: PaymentMethodForm = { name: "", description: "", icon: "", accountInfo: "", active: true };
+const sections: { id: Section; label: string; icon: string }[] = [
+  { id: "overview", label: "overview", icon: "▦" },
+  { id: "packages", label: "packages", icon: "◈" },
+  { id: "clients", label: "clients", icon: "◎" },
+  { id: "billing", label: "billing", icon: "$" },
+  { id: "orders", label: "orders", icon: "📦" },
+  { id: "payment-methods", label: "payment methods", icon: "💳" },
+];
 
 function formatPrice(value: number) { return `Rp ${value}K`; }
 function formatAmount(value: number) { return `Rp ${new Intl.NumberFormat("id-ID").format(value)}`; }
@@ -25,15 +35,19 @@ export default function AdminPage({ section }: { section: Section }) {
   const [clients, setClients] = useState<ClientRecord[]>(clientSeed);
   const [billings, setBillings] = useState<BillingRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodRecord[]>(paymentMethodSeed);
   const [packageForm, setPackageForm] = useState<PackageForm>(emptyPackage);
   const [clientForm, setClientForm] = useState<ClientForm>(emptyClient);
   const [billingForm, setBillingForm] = useState<BillingForm>(emptyBilling);
+  const [paymentMethodForm, setPaymentMethodForm] = useState<PaymentMethodForm>(emptyPaymentMethod);
   const [editingPackageId, setEditingPackageId] = useState<string | null>(null);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [editingBillingId, setEditingBillingId] = useState<string | null>(null);
+  const [editingPaymentMethodId, setEditingPaymentMethodId] = useState<string | null>(null);
   const [packageSearch, setPackageSearch] = useState("");
   const [clientSearch, setClientSearch] = useState("");
   const [orderSearch, setOrderSearch] = useState("");
+  const [paymentMethodSearch, setPaymentMethodSearch] = useState("");
   const [notice, setNotice] = useState("");
   const router = useRouter();
 
@@ -43,22 +57,24 @@ export default function AdminPage({ section }: { section: Section }) {
   }
 
   const loadData = useCallback(async () => {
-    const [packageResponse, clientResponse, billingResponse, orderResponse] = await Promise.all([
+    const [packageResponse, clientResponse, billingResponse, orderResponse, paymentMethodResponse] = await Promise.all([
       fetch("/api/admin/packages"),
       fetch("/api/admin/clients"),
       fetch("/api/admin/billing"),
       fetch("/api/admin/orders"),
+      fetch("/api/admin/payment-methods"),
     ]);
-    if ([packageResponse, clientResponse, billingResponse, orderResponse].some((response) => response.status === 401)) {
+    if ([packageResponse, clientResponse, billingResponse, orderResponse, paymentMethodResponse].some((response) => response.status === 401)) {
       router.push("/admin/login");
       return;
     }
-    if (!packageResponse.ok || !clientResponse.ok || !billingResponse.ok || !orderResponse.ok) throw new Error("Unable to load admin data.");
+    if (!packageResponse.ok || !clientResponse.ok || !billingResponse.ok || !orderResponse.ok || !paymentMethodResponse.ok) throw new Error("Unable to load admin data.");
     setPackages(await packageResponse.json() as PackageRecord[]);
     setClients(await clientResponse.json() as ClientRecord[]);
     const billingData = await billingResponse.json() as BillingRow[];
     setBillings(billingData.map((item) => ({ ...item, date: item.date.slice(0, 10) })));
     setOrders(await orderResponse.json() as OrderRow[]);
+    setPaymentMethods(await paymentMethodResponse.json() as PaymentMethodRecord[]);
   }, [router]);
 
   useEffect(() => {
@@ -86,6 +102,10 @@ export default function AdminPage({ section }: { section: Section }) {
   const visibleOrders = useMemo(() => orders.filter((item) =>
     `${item.name} ${item.email} ${item.project} ${item.status}`.toLowerCase().includes(orderSearch.toLowerCase()),
   ), [orders, orderSearch]);
+
+  const visiblePaymentMethods = useMemo(() => paymentMethods.filter((item) =>
+    `${item.name} ${item.description}`.toLowerCase().includes(paymentMethodSearch.toLowerCase()),
+  ), [paymentMethods, paymentMethodSearch]);
 
   async function savePackage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -232,6 +252,67 @@ export default function AdminPage({ section }: { section: Section }) {
     showNotice("Order removed");
   }
 
+  async function savePaymentMethod(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!paymentMethodForm.name.trim() || !paymentMethodForm.description.trim()) return;
+    try {
+      const id = editingPaymentMethodId ?? makeId("pm");
+      const response = await fetch(editingPaymentMethodId ? `/api/admin/payment-methods/${id}` : "/api/admin/payment-methods", {
+        method: editingPaymentMethodId ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...paymentMethodForm, id }),
+      });
+      if (!response.ok) throw new Error("Unable to save payment method.");
+      const saved = await response.json() as PaymentMethodRecord;
+      setPaymentMethods((current) => editingPaymentMethodId ? current.map((item) => item.id === id ? saved : item) : [...current, saved]);
+      showNotice(editingPaymentMethodId ? "Payment method updated" : "Payment method added");
+    } catch (error) {
+      console.error(error);
+      showNotice("Unable to save payment method");
+    }
+    setPaymentMethodForm(emptyPaymentMethod);
+    setEditingPaymentMethodId(null);
+  }
+
+  function editPaymentMethod(item: PaymentMethodRecord) {
+    setEditingPaymentMethodId(item.id);
+    setPaymentMethodForm({
+      name: item.name,
+      description: item.description,
+      icon: item.icon ?? "",
+      accountInfo: item.accountInfo ?? "",
+      active: item.active,
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function togglePaymentMethod(item: PaymentMethodRecord) {
+    try {
+      const response = await fetch(`/api/admin/payment-methods/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...item, active: !item.active }),
+      });
+      if (!response.ok) throw new Error("Unable to update payment method.");
+      setPaymentMethods((current) => current.map((entry) => entry.id === item.id ? { ...entry, active: !entry.active } : entry));
+      showNotice(`${item.name} ${item.active ? "deactivated" : "activated"}`);
+    } catch (error) {
+      console.error(error);
+      showNotice("Unable to update payment method");
+    }
+  }
+
+  async function removePaymentMethod(id: string) {
+    if (!window.confirm("Remove this payment method?")) return;
+    const response = await fetch(`/api/admin/payment-methods/${id}`, { method: "DELETE" });
+    if (!response.ok) {
+      showNotice("Unable to remove payment method");
+      return;
+    }
+    setPaymentMethods((current) => current.filter((item) => item.id !== id));
+    showNotice("Payment method removed");
+  }
+
   return (
     <main className="admin-shell">
       <aside className="admin-sidebar">
@@ -244,13 +325,11 @@ export default function AdminPage({ section }: { section: Section }) {
           <span><strong>{adminSeed.name}</strong><small>{adminSeed.email}</small></span>
         </div>
         <nav className="admin-nav" aria-label="Admin navigation">
-          <nav className="admin-nav" aria-label="Admin navigation">
-            {(["overview", "packages", "clients", "billing", "orders"] as Section[]).map((item) => (
-              <Link key={item} className={section === item ? "active" : ""} href={`/admin/${item}`}>
-                <span>{item === "overview" ? "▦" : item === "packages" ? "◈" : item === "clients" ? "◎" : item === "billing" ? "$" : "📦"}</span>{item}
-              </Link>
-            ))}
-          </nav>
+          {sections.map((item) => (
+            <Link key={item.id} className={section === item.id ? "active" : ""} href={`/admin/${item.id}`}>
+              <span>{item.icon}</span>{item.label}
+            </Link>
+          ))}
         </nav>
         <div className="admin-sidebar-footer">
           <span className="live-dot" /> local workspace
@@ -261,7 +340,7 @@ export default function AdminPage({ section }: { section: Section }) {
 
       <section className="admin-content">
         <header className="admin-header">
-          <div><p className="eyebrow">workspace / {section}</p><h1>{section === "overview" ? "Good morning, Sendiko." : `Manage ${section}.`}</h1></div>
+          <div><p className="eyebrow">workspace / {section}</p><h1>{section === "overview" ? "Good morning, Sendiko." : section === "payment-methods" ? "Manage payment methods." : `Manage ${section}.`}</h1></div>
           <Link className="admin-preview-link" href="/">view public site ↗</Link>
         </header>
         {notice && <div className="admin-notice" role="status">{notice}</div>}
@@ -326,12 +405,41 @@ export default function AdminPage({ section }: { section: Section }) {
               <label>client<select value={billingForm.clientId} onChange={(event) => setBillingForm({ ...billingForm, clientId: event.target.value })}><option value="">Select a client</option>{clients.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
               <label>date<input type="date" value={billingForm.date} onChange={(event) => setBillingForm({ ...billingForm, date: event.target.value })} /></label>
               <label>amount (Rp)<input type="number" min="0" step="1" value={billingForm.amount} onChange={(event) => setBillingForm({ ...billingForm, amount: Number(event.target.value) })} /></label>
-              <label>payment method<select value={billingForm.paymentMethod} onChange={(event) => setBillingForm({ ...billingForm, paymentMethod: event.target.value as BillingForm["paymentMethod"] })}><option>Bank transfer</option><option>Cash</option><option>E-wallet</option><option>Credit card</option></select></label>
+              <label>payment method<select value={billingForm.paymentMethod} onChange={(event) => setBillingForm({ ...billingForm, paymentMethod: event.target.value })}>{paymentMethods.filter((method) => method.active).map((method) => <option key={method.id} value={method.name}>{method.name}</option>)}{!paymentMethods.some((method) => method.active && method.name === billingForm.paymentMethod) && <option value={billingForm.paymentMethod}>{billingForm.paymentMethod}</option>}</select></label>
               <div className="admin-form-actions"><button className="admin-primary-button" type="submit">{editingBillingId ? "save changes" : "add payment"} <span>↗</span></button>{editingBillingId && <button className="admin-secondary-button" type="button" onClick={() => { setEditingBillingId(null); setBillingForm(emptyBilling); }}>cancel</button>}</div>
             </form>
           </div>
           <div className="admin-panel admin-table-panel"><div className="admin-panel-heading"><div><p className="eyebrow">billing records / {billings.length}</p><h2>Payment history</h2></div><input className="admin-search" value={clientSearch} onChange={(event) => setClientSearch(event.target.value)} placeholder="search billing..." /></div>
             {visibleBillings.length ? <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>client</th><th>date</th><th>amount</th><th>payment method</th><th /></tr></thead><tbody>{visibleBillings.map((item) => <tr key={item.id}><td><strong>{item.client?.name ?? "Unknown client"}</strong></td><td>{item.date}</td><td className="admin-price">{formatAmount(item.amount)}</td><td>{item.paymentMethod}</td><td className="admin-row-actions"><button onClick={() => editBilling(item)}>edit</button><button onClick={() => removeBilling(item.id)}>remove</button></td></tr>)}</tbody></table></div> : <div className="admin-empty"><span>$</span><h3>No billing records yet.</h3><p>Record a payment after adding a client.</p></div>}
+          </div>
+        </div>}
+
+        {section === "orders" && <div className="admin-management">
+          <div className="admin-panel admin-form-panel"><div className="admin-panel-heading"><div><p className="eyebrow">order workflow</p><h2>How orders move.</h2></div></div>
+            <p style={{ color: "var(--muted)", fontSize: "12px", lineHeight: 1.7, margin: "22px 0 0" }}>Orders arrive from the public checkout as <strong>Pending</strong>. Confirm a transfer, mark it <strong>Completed</strong> once the server is deployed, or cancel it. Removing an order is permanent.</p>
+            <div className="admin-form" style={{ marginTop: "22px" }}>
+              <div style={{ color: "#64748b", font: "9px var(--font-geist-mono), monospace", textTransform: "uppercase" }}>status guide</div>
+              <div className="snapshot-list">{[["Pending", orders.filter((item) => item.status === "Pending").length], ["Confirmed", orders.filter((item) => item.status === "Confirmed").length], ["Completed", orders.filter((item) => item.status === "Completed").length], ["Cancelled", orders.filter((item) => item.status === "Cancelled").length]].map(([label, count]) => <div key={String(label)}><span>{label}</span><b>{count} orders</b><i /></div>)}</div>
+            </div>
+          </div>
+          <div className="admin-panel admin-table-panel"><div className="admin-panel-heading"><div><p className="eyebrow">incoming orders / {orders.length}</p><h2>Order queue</h2></div><input className="admin-search" value={orderSearch} onChange={(event) => setOrderSearch(event.target.value)} placeholder="search orders..." /></div>
+            {visibleOrders.length ? <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>customer</th><th>package</th><th>duration</th><th>total</th><th>payment</th><th>status</th><th /></tr></thead><tbody>{visibleOrders.map((item) => <tr key={item.id}><td><strong>{item.name}</strong><small>{item.email}</small></td><td>{item.package ? `${item.package.name}` : item.packageId}<small>{item.project}</small></td><td>{item.durationMonths} mo</td><td className="admin-price">{formatAmount(item.totalAmount)}</td><td>{item.paymentMethod}</td><td><select className="admin-search" style={{ maxWidth: "120px", minHeight: "30px" }} value={item.status} onChange={(event) => void updateOrderStatus(item.id, event.target.value as OrderRecord["status"])}><option>Pending</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option></select></td><td className="admin-row-actions"><button onClick={() => removeOrder(item.id)}>remove</button></td></tr>)}</tbody></table></div> : <div className="admin-empty"><span>📦</span><h3>No orders yet.</h3><p>Orders placed on the public checkout page will appear here.</p></div>}
+          </div>
+        </div>}
+
+        {section === "payment-methods" && <div className="admin-management">
+          <div className="admin-panel admin-form-panel"><div className="admin-panel-heading"><div><p className="eyebrow">{editingPaymentMethodId ? "edit payment method" : "new payment method"}</p><h2>{editingPaymentMethodId ? "Update a payment method." : "Add a payment method."}</h2></div></div>
+            <form className="admin-form" onSubmit={savePaymentMethod}>
+              <label>name<input value={paymentMethodForm.name} onChange={(event) => setPaymentMethodForm({ ...paymentMethodForm, name: event.target.value })} placeholder="Bank Transfer - Bank Jago" /></label>
+              <label>description<input value={paymentMethodForm.description} onChange={(event) => setPaymentMethodForm({ ...paymentMethodForm, description: event.target.value })} placeholder="Direct bank transfer" /></label>
+              <label>icon<input value={paymentMethodForm.icon ?? ""} onChange={(event) => setPaymentMethodForm({ ...paymentMethodForm, icon: event.target.value })} placeholder="🏦" /></label>
+              <label>account info<input value={paymentMethodForm.accountInfo ?? ""} onChange={(event) => setPaymentMethodForm({ ...paymentMethodForm, accountInfo: event.target.value })} placeholder="1234567890 a.n. Sendiko" /></label>
+              <label className="admin-checkbox"><input type="checkbox" checked={paymentMethodForm.active} onChange={(event) => setPaymentMethodForm({ ...paymentMethodForm, active: event.target.checked })} /> available at checkout</label>
+              <div className="admin-form-actions"><button className="admin-primary-button" type="submit">{editingPaymentMethodId ? "save changes" : "add method"} <span>↗</span></button>{editingPaymentMethodId && <button className="admin-secondary-button" type="button" onClick={() => { setEditingPaymentMethodId(null); setPaymentMethodForm(emptyPaymentMethod); }}>cancel</button>}</div>
+            </form>
+          </div>
+          <div className="admin-panel admin-table-panel"><div className="admin-panel-heading"><div><p className="eyebrow">payment methods / {paymentMethods.length}</p><h2>Payment channels</h2></div><input className="admin-search" value={paymentMethodSearch} onChange={(event) => setPaymentMethodSearch(event.target.value)} placeholder="search methods..." /></div>
+            {visiblePaymentMethods.length ? <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>method</th><th>account info</th><th>status</th><th /></tr></thead><tbody>{visiblePaymentMethods.map((item) => <tr key={item.id}><td><strong>{item.icon ? `${item.icon} ` : ""}{item.name}</strong><small>{item.description}</small></td><td>{item.accountInfo ?? "—"}</td><td><span className={`admin-status ${item.active ? "active" : "paused"}`}>{item.active ? "active" : "disabled"}</span></td><td className="admin-row-actions"><button onClick={() => editPaymentMethod(item)}>edit</button><button onClick={() => togglePaymentMethod(item)}>{item.active ? "disable" : "enable"}</button><button onClick={() => removePaymentMethod(item.id)}>remove</button></td></tr>)}</tbody></table></div> : <div className="admin-empty"><span>💳</span><h3>No payment methods yet.</h3><p>Add a channel customers can pay through.</p></div>}
           </div>
         </div>}
       </section>

@@ -23,7 +23,7 @@ export type BillingRecord = {
   clientId: string;
   date: string;
   amount: number;
-  paymentMethod: "Bank transfer" | "Cash" | "E-wallet" | "Credit card";
+  paymentMethod: string;
 };
 
 export type CustomerRecord = {
@@ -49,6 +49,17 @@ export type OrderRecord = {
   customerId?: string;
   clientId?: string;
   createdAt: string;
+  updatedAt?: string;
+};
+
+export type PaymentMethodRecord = {
+  id: string;
+  name: string;
+  description: string;
+  icon?: string;
+  accountInfo?: string;
+  active: boolean;
+  createdAt?: string;
   updatedAt?: string;
 };
 
@@ -99,3 +110,53 @@ export const packageSeed: PackageRecord[] = [
 ];
 
 export const clientSeed: ClientRecord[] = [];
+
+export const paymentMethodSeed: PaymentMethodRecord[] = [
+  {
+    id: "pm-bank-jago",
+    name: "Bank Transfer - Bank Jago",
+    description: "Direct bank transfer via Bank Jago",
+    icon: "🏦",
+    accountInfo: "Bank Jago Account Details",
+    active: true,
+  },
+  {
+    id: "pm-bca",
+    name: "Bank Transfer - BCA",
+    description: "Direct bank transfer via BCA",
+    icon: "🏦",
+    accountInfo: "BCA Account Details",
+    active: true,
+  },
+  {
+    id: "pm-mandiri",
+    name: "Bank Transfer - Mandiri",
+    description: "Direct bank transfer via Mandiri",
+    icon: "🏦",
+    accountInfo: "Mandiri Account Details",
+    active: true,
+  },
+  {
+    id: "pm-gopay",
+    name: "E-wallet - GoPay",
+    description: "Payment via GoPay e-wallet",
+    icon: "💳",
+    accountInfo: "GoPay Account Details",
+    active: true,
+  },
+  {
+    id: "pm-ovo",
+    name: "E-wallet - OVO",
+    description: "Payment via OVO e-wallet",
+    icon: "💳",
+    accountInfo: "OVO Account Details",
+    active: true,
+  },
+  {
+    id: "pm-cash",
+    name: "Cash Payment",
+    description: "Direct cash payment",
+    icon: "💰",
+    active: true,
+  },
+];

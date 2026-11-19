@@ -1,5 +1,5 @@
 import { PrismaClient } from "../lib/generated/prisma/client";
-import { adminSeed, clientSeed, customerSeed, packageSeed } from "../lib/seed-data";
+import { adminSeed, clientSeed, customerSeed, packageSeed, paymentMethodSeed } from "../lib/seed-data";
 
 const prisma = new PrismaClient();
 
@@ -31,7 +31,28 @@ async function main() {
     await prisma.client.upsert({ where: { id: item.id }, update: item, create: item });
   }
 
-  console.log(`Seeded ${customerSeed.length} customers, ${packageSeed.length} packages, and ${clientSeed.length} clients.`);
+  for (const item of paymentMethodSeed) {
+    await prisma.paymentMethod.upsert({
+      where: { id: item.id },
+      update: {
+        name: item.name,
+        description: item.description,
+        icon: item.icon ?? null,
+        accountInfo: item.accountInfo ?? null,
+        active: item.active,
+      },
+      create: {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        icon: item.icon ?? null,
+        accountInfo: item.accountInfo ?? null,
+        active: item.active,
+      },
+    });
+  }
+
+  console.log(`Seeded ${customerSeed.length} customers, ${packageSeed.length} packages, ${clientSeed.length} clients, and ${paymentMethodSeed.length} payment methods.`);
 }
 
 main()
