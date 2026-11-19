@@ -122,9 +122,6 @@ export default function Home() {
           <Link href="/account">{isId ? "akun" : "account"}</Link>
         </div>
         <div className="nav-actions">
-          <Link className="text-link" href="/account" style={{ border: "none", paddingBottom: 0 }}>
-            {isId ? "akun" : "account"}
-          </Link>
           <div className="language-switcher" aria-label="Pilih bahasa / Choose language">
             <button className={isId ? "active" : ""} onClick={() => setLanguage("id")}>ID</button>
             <button className={!isId ? "active" : ""} onClick={() => setLanguage("en")}>EN</button>
