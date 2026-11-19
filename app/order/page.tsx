@@ -64,6 +64,24 @@ function OrderFormContent() {
   const [completedOrder, setCompletedOrder] = useState<OrderResult | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // Language state
+  const [language, setLanguage] = useState<"id" | "en">("id");
+  const isId = language === "id";
+
+  useEffect(() => {
+    const saved = localStorage.getItem("sendiko_lang") as "id" | "en" | null;
+    if (saved && (saved === "id" || saved === "en")) {
+      setLanguage(saved);
+    }
+  }, []);
+
+  function switchLanguage(lang: "id" | "en") {
+    setLanguage(lang);
+    try {
+      localStorage.setItem("sendiko_lang", lang);
+    } catch {}
+  }
+
   // Check if visitor is logged in
   useEffect(() => {
     async function checkAuth() {
@@ -279,17 +297,21 @@ Mohon konfirmasi dan proses setup deploymentnya kak. Terima kasih!`;
           </Link>
 
           <div className="account-user-action">
+            <div className="language-switcher" aria-label="Pilih bahasa / Choose language">
+              <button className={isId ? "active" : ""} onClick={() => switchLanguage("id")} type="button">ID</button>
+              <button className={!isId ? "active" : ""} onClick={() => switchLanguage("en")} type="button">EN</button>
+            </div>
             <Link href="/" className="admin-preview-link">
-              ← Back to Site
+              {isId ? "← Kembali ke Website" : "← Back to Site"}
             </Link>
 
             {customer ? (
               <Link href="/account" className="admin-status" style={{ border: "1px solid var(--indigo)", color: "var(--foreground)" }}>
-                Account: {customer.name} ↗
+                {isId ? "Akun: " : "Account: "}{customer.name} ↗
               </Link>
             ) : (
               <Link href="/account/login" className="admin-preview-link" style={{ color: "var(--indigo)" }}>
-                Sign In ↗
+                {isId ? "Masuk ↗" : "Sign In ↗"}
               </Link>
             )}
           </div>
@@ -298,12 +320,14 @@ Mohon konfirmasi dan proses setup deploymentnya kak. Terima kasih!`;
 
       <main className="order-shell">
         <div>
-          <p className="eyebrow">Homelab Hosting / Place An Order</p>
+          <p className="eyebrow">{isId ? "Hosting Homelab / Buat Pesanan" : "Homelab Hosting / Place An Order"}</p>
           <h1 style={{ fontSize: "clamp(30px, 4.5vw, 42px)", margin: "8px 0 12px" }}>
-            Deploy your project.
+            {isId ? "Deploy project kuliahmu." : "Deploy your project."}
           </h1>
           <p style={{ color: "var(--muted)", fontSize: "14px", margin: 0, maxWidth: "600px", lineHeight: "1.6" }}>
-            Select your preferred stack, resource capacity, and duration. You'll receive your custom domain and live container ready for your final presentation.
+            {isId
+              ? "Pilih stack teknologi, kapasitas resource, dan durasi hosting. Dapatkan subdomain custom dan container live siap untuk demo dan penilaian."
+              : "Select your preferred stack, resource capacity, and duration. You'll receive your custom domain and live container ready for your final presentation."}
           </p>
         </div>
 

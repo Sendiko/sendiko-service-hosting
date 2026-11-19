@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -11,19 +11,35 @@ export default function CustomerRegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [language, setLanguage] = useState<"id" | "en">("id");
+  const isId = language === "id";
   const router = useRouter();
+
+  useEffect(() => {
+    const saved = localStorage.getItem("sendiko_lang") as "id" | "en" | null;
+    if (saved && (saved === "id" || saved === "en")) {
+      setLanguage(saved);
+    }
+  }, []);
+
+  function switchLanguage(lang: "id" | "en") {
+    setLanguage(lang);
+    try {
+      localStorage.setItem("sendiko_lang", lang);
+    } catch {}
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(isId ? "Kata sandi minimal harus 6 karakter." : "Password must be at least 6 characters.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(isId ? "Konfirmasi kata sandi tidak cocok." : "Passwords do not match.");
       return;
     }
 
@@ -39,7 +55,7 @@ export default function CustomerRegisterPage() {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setError(data.error || "Unable to create account.");
+        setError(data.error || (isId ? "Tidak dapat membuat akun." : "Unable to create account."));
         return;
       }
 
@@ -47,7 +63,7 @@ export default function CustomerRegisterPage() {
       router.refresh();
     } catch (requestError) {
       console.error(requestError);
-      setError("Unable to reach the server. Please try again.");
+      setError(isId ? "Tidak dapat terhubung ke server. Silakan coba lagi." : "Unable to reach the server. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -56,17 +72,28 @@ export default function CustomerRegisterPage() {
   return (
     <main className="login-shell">
       <section className="login-card">
-        <Link className="brand login-brand" href="/">
-          <span className="brand-mark">SSH</span>
-          <span className="brand-name">Sendiko Service Hosting</span>
-        </Link>
-        <p className="eyebrow">customer portal / sign up</p>
-        <h1>Create account.</h1>
-        <p className="login-copy">Create your customer account to manage your hosting and personal credentials.</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
+          <Link className="brand" href="/">
+            <span className="brand-mark">SSH</span>
+            <span className="brand-name">Sendiko Service Hosting</span>
+          </Link>
+          <div className="language-switcher" aria-label="Pilih bahasa / Choose language">
+            <button className={isId ? "active" : ""} onClick={() => switchLanguage("id")} type="button">ID</button>
+            <button className={!isId ? "active" : ""} onClick={() => switchLanguage("en")} type="button">EN</button>
+          </div>
+        </div>
+
+        <p className="eyebrow">{isId ? "portal customer / pendaftaran" : "customer portal / sign up"}</p>
+        <h1>{isId ? "Buat akun baru." : "Create account."}</h1>
+        <p className="login-copy">
+          {isId
+            ? "Buat akun customer-mu untuk mengelola hosting dan kredensial akun."
+            : "Create your customer account to manage your hosting and personal credentials."}
+        </p>
 
         <form className="admin-form login-form" onSubmit={submit}>
           <label>
-            full name
+            {isId ? "nama lengkap" : "full name"}
             <input
               autoComplete="name"
               placeholder="Ahmad Fauzi"
@@ -76,7 +103,7 @@ export default function CustomerRegisterPage() {
             />
           </label>
           <label>
-            email address
+            {isId ? "alamat email" : "email address"}
             <input
               autoComplete="email"
               placeholder="you@student.ac.id"
@@ -87,10 +114,10 @@ export default function CustomerRegisterPage() {
             />
           </label>
           <label>
-            password
+            {isId ? "kata sandi" : "password"}
             <input
               autoComplete="new-password"
-              placeholder="Min. 6 characters"
+              placeholder={isId ? "Min. 6 karakter" : "Min. 6 characters"}
               required
               type="password"
               value={password}
@@ -98,10 +125,10 @@ export default function CustomerRegisterPage() {
             />
           </label>
           <label>
-            confirm password
+            {isId ? "konfirmasi kata sandi" : "confirm password"}
             <input
               autoComplete="new-password"
-              placeholder="Repeat your password"
+              placeholder={isId ? "Ulangi kata sandi" : "Repeat your password"}
               required
               type="password"
               value={confirmPassword}
@@ -112,16 +139,18 @@ export default function CustomerRegisterPage() {
           {error && <p className="login-error" role="alert">{error}</p>}
 
           <button className="admin-primary-button" disabled={isLoading} type="submit">
-            {isLoading ? "creating account..." : "create account"} <span>↗</span>
+            {isLoading
+              ? (isId ? "sedang membuat akun..." : "creating account...")
+              : (isId ? "buat akun" : "create account")} <span>↗</span>
           </button>
         </form>
 
         <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid var(--line)", display: "flex", justifyContent: "space-between", fontSize: "11px", fontFamily: "var(--font-geist-mono), monospace" }}>
           <Link href="/account/login" style={{ color: "var(--indigo)" }}>
-            Already have an account? Sign in ↗
+            {isId ? "Sudah punya akun? Masuk ↗" : "Already have an account? Sign in ↗"}
           </Link>
           <Link href="/" style={{ color: "var(--muted)" }}>
-            ← Home
+            {isId ? "← Beranda" : "← Home"}
           </Link>
         </div>
       </section>

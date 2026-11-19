@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const apiPlans = [
@@ -107,6 +107,20 @@ export default function Home() {
   const [language, setLanguage] = useState<"id" | "en">("id");
   const isId = language === "id";
 
+  useEffect(() => {
+    const saved = localStorage.getItem("sendiko_lang") as "id" | "en" | null;
+    if (saved && (saved === "id" || saved === "en")) {
+      setLanguage(saved);
+    }
+  }, []);
+
+  function switchLanguage(lang: "id" | "en") {
+    setLanguage(lang);
+    try {
+      localStorage.setItem("sendiko_lang", lang);
+    } catch {}
+  }
+
   return (
     <main>
       <nav className="nav shell" aria-label="Main navigation">
@@ -123,8 +137,8 @@ export default function Home() {
         </div>
         <div className="nav-actions">
           <div className="language-switcher" aria-label="Pilih bahasa / Choose language">
-            <button className={isId ? "active" : ""} onClick={() => setLanguage("id")}>ID</button>
-            <button className={!isId ? "active" : ""} onClick={() => setLanguage("en")}>EN</button>
+            <button className={isId ? "active" : ""} onClick={() => switchLanguage("id")}>ID</button>
+            <button className={!isId ? "active" : ""} onClick={() => switchLanguage("en")}>EN</button>
           </div>
           <Link className="button button-small" href="/order">{isId ? "deploy project saya" : "deploy my project"} <ArrowUpRight /></Link>
         </div>
