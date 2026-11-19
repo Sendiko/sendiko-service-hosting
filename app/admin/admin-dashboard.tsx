@@ -3,9 +3,10 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { adminSeed, clientSeed, packageSeed, type BillingRecord, type ClientRecord, type PackageRecord } from "../../lib/seed-data";
+import { adminSeed, clientSeed, packageSeed, type BillingRecord, type ClientRecord, type PackageRecord, type OrderRecord } from "../../lib/seed-data";
 
-type Section = "overview" | "packages" | "clients" | "billing";
+type Section = "overview" | "packages" | "clients" | "billing" | "orders";
+type OrderRow = OrderRecord & { package?: { name: string; resource: string } };
 type PackageForm = Omit<PackageRecord, "id">;
 type ClientForm = Omit<ClientRecord, "id">;
 type BillingForm = Omit<BillingRecord, "id">;
@@ -23,6 +24,7 @@ export default function AdminPage({ section }: { section: Section }) {
   const [packages, setPackages] = useState<PackageRecord[]>(packageSeed);
   const [clients, setClients] = useState<ClientRecord[]>(clientSeed);
   const [billings, setBillings] = useState<BillingRow[]>([]);
+  const [orders, setOrders] = useState<OrderRow[]>([]);
   const [packageForm, setPackageForm] = useState<PackageForm>(emptyPackage);
   const [clientForm, setClientForm] = useState<ClientForm>(emptyClient);
   const [billingForm, setBillingForm] = useState<BillingForm>(emptyBilling);
@@ -31,6 +33,7 @@ export default function AdminPage({ section }: { section: Section }) {
   const [editingBillingId, setEditingBillingId] = useState<string | null>(null);
   const [packageSearch, setPackageSearch] = useState("");
   const [clientSearch, setClientSearch] = useState("");
+  const [orderSearch, setOrderSearch] = useState("");
   const [notice, setNotice] = useState("");
   const router = useRouter();
 
@@ -40,20 +43,22 @@ export default function AdminPage({ section }: { section: Section }) {
   }
 
   const loadData = useCallback(async () => {
-    const [packageResponse, clientResponse, billingResponse] = await Promise.all([
+    const [packageResponse, clientResponse, billingResponse, orderResponse] = await Promise.all([
       fetch("/api/admin/packages"),
       fetch("/api/admin/clients"),
       fetch("/api/admin/billing"),
+      fetch("/api/admin/orders"),
     ]);
-    if ([packageResponse, clientResponse, billingResponse].some((response) => response.status === 401)) {
+    if ([packageResponse, clientResponse, billingResponse, orderResponse].some((response) => response.status === 401)) {
       router.push("/admin/login");
       return;
     }
-    if (!packageResponse.ok || !clientResponse.ok || !billingResponse.ok) throw new Error("Unable to load admin data.");
+    if (!packageResponse.ok || !clientResponse.ok || !billingResponse.ok || !orderResponse.ok) throw new Error("Unable to load admin data.");
     setPackages(await packageResponse.json() as PackageRecord[]);
     setClients(await clientResponse.json() as ClientRecord[]);
     const billingData = await billingResponse.json() as BillingRow[];
     setBillings(billingData.map((item) => ({ ...item, date: item.date.slice(0, 10) })));
+    setOrders(await orderResponse.json() as OrderRow[]);
   }, [router]);
 
   useEffect(() => {
@@ -77,6 +82,10 @@ export default function AdminPage({ section }: { section: Section }) {
   const visibleBillings = useMemo(() => billings.filter((item) =>
     `${item.client?.name ?? ""} ${item.paymentMethod} ${item.date}`.toLowerCase().includes(clientSearch.toLowerCase()),
   ), [billings, clientSearch]);
+
+  const visibleOrders = useMemo(() => orders.filter((item) =>
+    `${item.name} ${item.email} ${item.project} ${item.status}`.toLowerCase().includes(orderSearch.toLowerCase()),
+  ), [orders, orderSearch]);
 
   async function savePackage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -196,6 +205,33 @@ export default function AdminPage({ section }: { section: Section }) {
     showNotice("Billing record removed");
   }
 
+  async function updateOrderStatus(id: string, status: string) {
+    try {
+      const response = await fetch(`/api/admin/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error("Unable to update order status.");
+      setOrders((current) => current.map((item) => item.id === id ? { ...item, status } : item));
+      showNotice(`Order marked as ${status}`);
+    } catch (error) {
+      console.error(error);
+      showNotice("Unable to update order status");
+    }
+  }
+
+  async function removeOrder(id: string) {
+    if (!window.confirm("Remove this order?")) return;
+    const response = await fetch(`/api/admin/orders/${id}`, { method: "DELETE" });
+    if (!response.ok) {
+      showNotice("Unable to remove order");
+      return;
+    }
+    setOrders((current) => current.filter((item) => item.id !== id));
+    showNotice("Order removed");
+  }
+
   return (
     <main className="admin-shell">
       <aside className="admin-sidebar">
@@ -208,9 +244,9 @@ export default function AdminPage({ section }: { section: Section }) {
           <span><strong>{adminSeed.name}</strong><small>{adminSeed.email}</small></span>
         </div>
         <nav className="admin-nav" aria-label="Admin navigation">
-          {(["overview", "packages", "clients", "billing"] as Section[]).map((item) => (
+          {([\"overview\", \"packages\", \"clients\", \"billing\", \"orders\"] as Section[]).map((item) => (
             <Link key={item} className={section === item ? "active" : ""} href={`/admin/${item}`}>
-              <span>{item === "overview" ? "▦" : item === "packages" ? "◈" : item === "clients" ? "◎" : "$"}</span>{item}
+              <span>{item === "overview" ? "▦" : item === "packages" ? "◈" : item === "clients" ? "◎" : item === "billing" ? "$" : "📦"}</span>{item}
             </Link>
           ))}
         </nav>
@@ -234,6 +270,7 @@ export default function AdminPage({ section }: { section: Section }) {
               <div className="admin-stat"><span>active packages</span><strong>{packages.filter((item) => item.active).length}</strong><small>across {new Set(packages.map((item) => item.name)).size} services</small></div>
               <div className="admin-stat"><span>monthly from</span><strong>Rp 50K</strong><small>current entry price</small></div>
               <div className="admin-stat"><span>clients</span><strong>{clients.length}</strong><small>{clients.length ? "managed records" : "ready for your first client"}</small></div>
+              <div className="admin-stat"><span>pending orders</span><strong>{orders.filter((item) => item.status === "Pending").length}</strong><small>{orders.length ? `${orders.length} total orders` : "no orders yet"}</small></div>
             </div>
             <div className="admin-panel admin-quick-panel">
               <div className="admin-panel-heading"><div><p className="eyebrow">quick actions</p><h2>Keep the catalog current.</h2></div><span className="admin-panel-icon">↗</span></div>
