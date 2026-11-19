@@ -22,8 +22,8 @@ const sections: { id: Section; label: string; icon: string }[] = [
   { id: "packages", label: "packages", icon: "◈" },
   { id: "clients", label: "clients", icon: "◎" },
   { id: "billing", label: "billing", icon: "$" },
-  { id: "orders", label: "orders", icon: "📦" },
-  { id: "payment-methods", label: "payment methods", icon: "💳" },
+  { id: "orders", label: "orders", icon: "▤" },
+  { id: "payment-methods", label: "payment methods", icon: "¤" },
 ];
 
 function formatPrice(value: number) { return `Rp ${value}K`; }
